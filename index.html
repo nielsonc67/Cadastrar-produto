@@ -1,0 +1,128 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cadastro de Produtos</title>
+</head>
+<body>
+    <h2>Cadastrar Meus produtos</h2>
+    <h2>Fixtell/Vero</h2>
+    <label for="name">Nome:</label><br>
+    <input type="text" id="name"><br><br>
+
+    <label for="name">Descrição:</label><br>
+    <input type="text" id="name"><br><br>
+
+    <label for="barcode">Código de Barras:</label><br>
+    <input type="text" id="barcode"><br><br>
+
+    <button onclick="saveProduct()">Salvar Produto</button><br><br>
+
+    <h2>Buscar Produto</h2>
+    <label for="searchBarcode">Código de Barras:</label><br>
+    <input type="text" id="searchBarcode">
+    <button onclick="searchProduct()">Buscar Produto</button><br><br>
+
+    <div id="productInfo"></div>
+
+    <script>
+        function saveProduct() {
+            const name = document.getElementById('name').value;
+            const barcode = document.getElementById('barcode').value;
+            fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, barcode }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => console.error('Erro:', error));
+        }
+
+        function searchProduct() {
+            const barcode = document.getElementById('searchBarcode').value;
+            fetch(/api/products/${barcode})
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Produto não encontrado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const productInfo = document.getElementById('productInfo');
+                productInfo.innerHTML = `
+                    <h3>Informações do Produto:</h3>
+                    <p><strong>Nome:</strong> ${data.name}</p>
+                    <p><strong>Código de Barras:</strong> ${data.barcode}</p>
+                `;
+            })
+            .catch(error => {
+                alert(error.message);
+                console.error('Erro:', error);
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ler Código de Barras</title>
+    <script src="https://cdn.jsdelivr.net/npm/quagga"></script>
+</head>
+<body>
+    <h1>ler Código de Barras</h1>
+    <button onclick="startScanner()">Iniciar Scanner</button><br><br>
+    <div id="interactive" class="viewport"></div>
+    <script>
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#interactive'),
+                    constraints: {
+                        width: 800,
+                        height: 600,
+                        facingMode: "environment"
+                    },
+                },
+                decoder: {
+                    readers: ["ean_reader"]
+                }
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                console.log("QuaggaJS iniciado com sucesso!");
+                Quagga.start();
+            });
+
+            Quagga.onDetected(function(result) {
+                console.log("Código de barras detectado:", result.codeResult.code);
+                alert("Código de barras detectado: " + result.codeResult.code);
+                Quagga.stop();
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
